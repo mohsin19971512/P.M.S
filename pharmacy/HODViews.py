@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import datetime 
 
-
+ 
 from .forms import *
 from .models import *
 
