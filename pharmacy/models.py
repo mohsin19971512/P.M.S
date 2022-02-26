@@ -13,30 +13,62 @@ from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.db.models.functions import Now
 
 
+
+class Medicine(models.Model):
+    MEDICINE_NAME = models.CharField(verbose_name="Medicine Name",max_length=500)
+    SELLING_PRICE = models.IntegerField(verbose_name="Selling Price")
+    EXPIRE_DATE = models.DateField(verbose_name="Expire Date")
+    MANUFACTURE_NAME = models.CharField(verbose_name="Manufacture Name",max_length=500)
+    UNITARY_PRICE = models.IntegerField(verbose_name="Unitary Price")
+    QUANTITY = models.IntegerField(verbose_name="Quantity")
+    DISCOUNT = models.IntegerField(verbose_name="Dicount")
+    def __str__(self) -> str:
+        return self.MANUFACTURE_NAME
+
+
+
+
+class Employee(models.Model):
+    EMPLOYEE_NAME = models.CharField(verbose_name="Employee Name",max_length=500) 
+    ADDRESS = models.CharField(verbose_name="Adress",max_length=500)
+    PHONE = models.CharField(verbose_name="phone number",max_length=13)
+    USERNAME = models.CharField(verbose_name="Username",max_length=200)
+    PASSWORD = models.CharField(verbose_name="Password",max_length=200)
+    MEDICINE_SOLD = models.CharField(verbose_name="Medicine Sold",max_length=500)
+    SELLING_DATE = models.DateField(verbose_name="Selling Date")
+    def __str__(self) -> str:
+        return self.EMPLOYEE_NAME
+
+class Customer(models.Model):
+    CUSTOMER_NAME = models.CharField(verbose_name="Customer Name",max_length=500)
+    ADDRESS = models.CharField(verbose_name="Adress",max_length=500)
+    PRODUCT = models.CharField(verbose_name="Product",max_length=500)
+    COST = models.IntegerField(verbose_name="Cost")
+    PHONE = models.CharField(verbose_name="Phone Number",max_length=13)
+    def __str__(self) -> str:
+        return self.CUSTOMER_NAME
+
+class Store(models.Model):
+    STORE_NAME = models.CharField(verbose_name="Store Name",max_length=500)
+    PLACE = models.CharField(verbose_name="Place",max_length=500)
+    MANAGERS_STORE = models.CharField(verbose_name="Manager Store",max_length=500)
+    def __str__(self) -> str:
+        return self.STORE_NAME
+
+
+class Location(models.Model):
+    SHELF = models.IntegerField(verbose_name="Shelf Number")
+    CLASSIFICATION =  models.CharField(verbose_name="classification",max_length=500)
+    MEDICINE_NAME =  models.CharField(verbose_name="Medicine Name",max_length=500)
+
+    def __str__(self) -> str:
+        return self.CLASSIFICATION
+
+
 class CustomUser(AbstractUser):
     user_type_data = ((1, "AdminHOD"), (2, "Pharmacist"), (3, "Doctor"), (4, "PharmacyClerk"),(5, "Patients"))
     user_type = models.CharField(default=1, choices=user_type_data, max_length=10)
 
-class Patients(models.Model):
-    gender_category=(
-        ('Male','Male'),
-        ('Female','Female'),
-    )
-    admin = models.OneToOneField(CustomUser,null=True, on_delete = models.CASCADE)
-    reg_no=models.CharField(max_length=30,null=True,blank=True,unique=True)
-    gender=models.CharField(max_length=7,null=True,blank=True,choices=gender_category)
-    first_name=models.CharField(max_length=20,null=True,blank=True)
-    last_name=models.CharField(max_length=20,null=True,blank=True)
-    dob=models.DateTimeField(auto_now_add= False, auto_now=False,null=True,blank=True)
-    phone_number=models.CharField(max_length=10,null=True,blank=True)
-    profile_pic=models.ImageField(default="patient.jpg",null=True,blank=True)
-    age= models.IntegerField(default='0', blank=True, null=True)
-    address=models.CharField(max_length=300,null=True,blank=True)
-    date_admitted=models.DateTimeField(auto_now_add=True, auto_now=False)
-    last_updated = models.DateTimeField(auto_now_add=False, auto_now=True)
-
-    def __str__(self):
-        return str(self.admin)
 
 
 
@@ -60,23 +92,6 @@ class AdminHOD(models.Model):
     
 
 
-class Pharmacist(models.Model):
-    gender_category=(
-        ('Male','Male'),
-        ('Female','Female'),
-    )
-    admin = models.OneToOneField(CustomUser,null=True, on_delete = models.CASCADE)
-    emp_no=models.CharField(max_length=100,null=True,blank=True)
-    age= models.IntegerField(default='0', blank=True, null=True)
-    gender=models.CharField(max_length=100,null=True,choices=gender_category)
-    mobile =models.CharField(max_length=10,null=True,blank=True)
-    address=models.CharField(max_length=300,null=True,blank=True)
-    profile_pic=models.ImageField(default="images2.png",null=True,blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    objects = models.Manager()
-    def __str__(self):
-        return str(self.admin)
 
     
 class Doctor(models.Model):
@@ -126,12 +141,6 @@ class Category(models.Model):
 	
 
     
-class Prescription(models.Model):
-    patient_id = models.ForeignKey(Patients,null=True, on_delete=models.SET_NULL)
-    description=models.TextField(null=True)
-    prescribe=models.CharField(max_length=100,null=True)
-    date_precribed=models.DateTimeField(auto_now_add=True, auto_now=False)
-
 
 
 
@@ -163,30 +172,7 @@ class Stock(models.Model):
    
     def __str__(self):
         return str(self.drug_name)
-   
-    
-class Dispense(models.Model):
-    
-    patient_id = models.ForeignKey(Patients, on_delete=models.DO_NOTHING,null=True)
-    drug_id = models.ForeignKey(Stock, on_delete=models.SET_NULL,null=True,blank=False)
-    dispense_quantity = models.PositiveIntegerField(default='1', blank=False, null=True)
-    taken=models.CharField(max_length=300,null=True, blank=True)
-    stock_ref_no=models.CharField(max_length=300,null=True, blank=True)
-    instructions=models.TextField(max_length=300,null=True, blank=False)
-    dispense_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
-
-
-class PatientFeedback(models.Model):
-    id = models.AutoField(primary_key=True)
-    patient_id = models.ForeignKey(Patients, on_delete=models.CASCADE)
-    admin_id= models.ForeignKey( AdminHOD,null=True, on_delete=models.CASCADE)
-    pharmacist_id=models.ForeignKey( Pharmacist,null=True, on_delete=models.CASCADE)
-    feedback = models.TextField(null=True)
-    feedback_reply = models.TextField(null=True)
-    admin_created_at = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    objects = models.Manager()
+  
 
 
 
@@ -197,14 +183,12 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         if instance.user_type == 1:
             AdminHOD.objects.create(admin=instance)
-        if instance.user_type == 2:
-            Pharmacist.objects.create(admin=instance,address="")
+        
         if instance.user_type == 3:
             Doctor.objects.create(admin=instance,address="")
         if instance.user_type == 4:
             PharmacyClerk.objects.create(admin=instance,address="")
-        if instance.user_type == 5:
-            Patients.objects.create(admin=instance,address="")
+        
        
        
        
@@ -213,14 +197,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if instance.user_type == 1:
         instance.adminhod.save()
-    if instance.user_type == 2:
-        instance.pharmacist.save()
-    if instance.user_type == 3:
-        instance.doctor.save()
     if instance.user_type == 4:
         instance.pharmacyclerk.save()
-    if instance.user_type == 5:
-        instance.patients.save()
+   
 
 
    

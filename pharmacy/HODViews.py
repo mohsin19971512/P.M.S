@@ -18,18 +18,14 @@ from .models import *
 
 
 def adminDashboard(request):
-    patients_total=Patients.objects.all().count()
+    medicines_total=Medicine.objects.all().count()
     
-    doctors=Doctor.objects.all().count()
-    pharmacist=Pharmacist.objects.all().count() 
+    Employees=Employee.objects.all().count()
+    customers=Customer.objects.all().count() 
     receptionist=PharmacyClerk.objects.all().count() 
     out_of_stock=Stock.objects.filter(quantity__lte=0).count()
     total_stock=Stock.objects.all().count()
-
-
-    today = datetime.today()
-    for_today = Patients.objects.filter(date_admitted__year=today.year, date_admitted__month=today.month, date_admitted__day=today.day).count()
-    print(for_today)
+    stores = Store.objects.all().count()
     exipred=Stock.objects.annotate(
     expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
     ).filter(expired=True).count()
@@ -37,99 +33,78 @@ def adminDashboard(request):
 
 
     context={
-        "patients_total":patients_total,
+        "medicines_total":medicines_total,
         "expired_total":exipred,
         "out_of_stock":out_of_stock,
         "total_drugs":total_stock,
-        "all_doctors":doctors,
-        "all_pharmacists":pharmacist,
+        "Employees":Employees,
+        "customers":customers,
         "all_clerks":receptionist,
-        "for_today":for_today
+        "stores":stores
 
     }
     return render(request,'hod_templates/admin_dashboard.html',context)
 
 
 
-def createPatient(request):
-    form=PatientForm()
+def createMedicine(request):
+    try:
+        form=MedicineForm(request.POST or None)
 
- 
-    if request.method == "POST":
-        form=PatientForm(request.POST, request.FILES)
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Medicine added Successfully!")
 
-        if form.is_valid():
+                return redirect('all_medicines')
+    except:
+        messages.error(request, "Medicine Not added! Try again")
 
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            address = form.cleaned_data['address']
-            phone_number = form.cleaned_data['phone_number']
-            dob = form.cleaned_data['dob']
-            gender = form.cleaned_data['gender']
-            reg_no = form.cleaned_data['reg_no']
+        return redirect('medicine_form')
 
-
-
-            user = CustomUser.objects.create_user(username=username, email=email,password=password, last_name=last_name,user_type=5)
-            user.patients.address = address
-            user.patients.phone_number = phone_number
-            user.patients.dob=dob
-            user.patients.reg_no=reg_no
-            user.patients.first_name=first_name
-            user.patients.last_name=last_name
-            user.patients.gender=gender
-
-            user.save()
-            messages.success(request, username +' was Successfully Added')
-
-            return redirect('patient_form')
-
-          
-   
-
+    
     context={
         "form":form,
-        "title":"Add Patient"
+        "title":"Add Medicine"
     }
        
-    return render(request,'hod_templates/patient_form.html',context)
+    return render(request,'hod_templates/medicine_form.html',context)
 
 
 
-def allPatients(request):
-    form=PatientSearchForm1(request.POST or None)
-    patients=Patients.objects.all()
+
+
+def allMedicine(request):
+    form=MedicineForm(request.POST or None)
+    medicine=Medicine.objects.all()
     context={
-        "patients":patients,
+        "medicine":medicine,
         "form":form,
         "title":"Admitted Patients"
     }
     if request.method == 'POST':
         # admin=form['first_name'].value()
         name = request.POST.get('search')
-        patients=Patients.objects.filter(first_name__icontains=name) 
+        medicines=Medicine.objects.filter(MEDICINE_NAME__icontains=name) 
        
         context={
-            "patients":patients,
+            "medicine":medicines,
             form:form
         }
-    return render(request,'hod_templates/admited_patients.html',context)
+    return render(request,'hod_templates/medicine.html',context)
 
 def confirmDelete(request,pk):
     try:
-        patient=Patients.objects.get(id=pk)
+        medicine=Medicine.objects.get(id=pk)
         if request.method == 'POST':
-            patient.delete()
-            return redirect('all_patients')
+            medicine.delete()
+            return redirect('all_medicines')
     except:
-        messages.error(request, "Patient Cannot be deleted  deleted , Patient is still on medication or an error occured")
-        return redirect('all_patients')
+        messages.error(request, "Medicine Cannot be deleted  deleted , Patient is still on medication or an error occured")
+        return redirect('all_medicines')
 
     context={
-        "patient":patient,
+        "medicine":medicine,
 
     }
     
@@ -139,91 +114,6 @@ def confirmDelete(request,pk):
 
 
 
-    
-@login_required
-def createPharmacist(request):
-
-    if request.method == "POST":
-           
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address = request.POST.get('address')
-        mobile = request.POST.get('mobile')
-        password = request.POST.get('password')
-           
-        
-        user = CustomUser.objects.create_user(username=username, email=email,password=password, first_name=first_name, last_name=last_name,user_type=2)
-        user.first_name=first_name
-        user.last_name=last_name
-        user.pharmacist.address = address
-        user.pharmacist.mobile = mobile
-
-        user.save()
-        messages.success(request, "Staff Added Successfully!")
-        return redirect('add_pharmacist')
-       
-
-    context={
-    "title":"Add Pharmacist"
-
-    }
-    
-
-    return render(request,'hod_templates/pharmacist_form.html',context)
-
-def managePharmacist(request):
-    staffs = Pharmacist.objects.all()
-    context = {
-        "staffs": staffs,
-        "title":"Manage Pharmacist"
-    }
-
-    return render(request,'hod_templates/all_pharmacist.html',context)
-
-def createDoctor(request):
-
-    if request.method == "POST":
-           
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address = request.POST.get('address')
-        mobile = request.POST.get('mobile')
-        password = request.POST.get('password')
-           
-        try:
-            user = CustomUser.objects.create_user(username=username, email=email,password=password, first_name=first_name, last_name=last_name,user_type=3)
-            user.doctor.address = address
-            user.doctor.mobile = mobile
-
-            user.save()
-            messages.success(request, "Staff Added Successfully!")
-            return redirect('add_doctor')
-        except:
-            messages.error(request, "Failed to Add Staff!")
-            return redirect('add_doctor')
-
-    context = {
-        "title":"Add Doctor"
-
-    }
-    
-
-    return render(request,'hod_templates/add_doctor.html',context)
-
-def manageDoctor(request):
-    staffs = Doctor.objects.all()
-
-    context = {
-        "staffs": staffs,
-        "title":"Dotors Details"
-
-    }
-
-    return render(request,'hod_templates/manage_doctor.html',context)
 
 def createPharmacyClerk(request):
 
@@ -329,72 +219,61 @@ def addCategory(request):
     }
     return render(request,'hod_templates/add_category.html',context)
 
-def addPrescription(request):
-    form=PrescriptionForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('prescribe')
-    
-    context={
-        "form":form,
-        "title":"Prescribe Drug"
-    }
-    return render(request,'hod_templates/prescribe.html',context)
-
 
 
     
-def editPatient(request,patient_id):
+def editMedicine(request,medicine_id):
     # adds patient id into session variable
-    request.session['patient_id'] = patient_id
+    request.session['medicine_id'] = medicine_id
 
-    patient = Patients.objects.get(admin=patient_id)
+    medicine = Medicine.objects.get(id=medicine_id)
 
-    form = EditPatientForm()
+    form = EditMedicineForm()
     
 
     # filling the form with data from the database
-    form.fields['email'].initial = patient.admin.email
-    form.fields['username'].initial = patient.admin.username
-    form.fields['first_name'].initial = patient.first_name
-    form.fields['last_name'].initial = patient.last_name
-    form.fields['address'].initial = patient.address
-    form.fields['gender'].initial = patient.gender
-    form.fields['phone_number'].initial = patient.phone_number
-    form.fields['dob'].initial = patient.dob
+    form.fields['MEDICINE_NAME'].initial = medicine.MEDICINE_NAME
+    form.fields['SELLING_PRICE'].initial = medicine.SELLING_PRICE
+    form.fields['EXPIRE_DATE'].initial = medicine.EXPIRE_DATE
+    form.fields['MANUFACTURE_NAME'].initial = medicine.MANUFACTURE_NAME
+    form.fields['UNITARY_PRICE'].initial = medicine.UNITARY_PRICE
+    form.fields['QUANTITY'].initial = medicine.QUANTITY
+    form.fields['DISCOUNT'].initial = medicine.DISCOUNT
     if request.method == "POST":
-        if patient_id == None:
+        if medicine_id == None:
             return redirect('all_patients')
-        form = EditPatientForm( request.POST)
+        form = EditMedicineForm( request.POST)
 
         if form.is_valid():
             
-            email = form.cleaned_data['email']
-            username = form.cleaned_data['username']
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            address = form.cleaned_data['address']
-            gender = form.cleaned_data['gender']
-            dob=form.cleaned_data['dob']
-            phone_number = form.cleaned_data['phone_number']
+            MEDICINE_NAME = form.cleaned_data['MEDICINE_NAME']
+            SELLING_PRICE = form.cleaned_data['SELLING_PRICE']
+            EXPIRE_DATE = form.cleaned_data['EXPIRE_DATE']
+            MANUFACTURE_NAME = form.cleaned_data['MANUFACTURE_NAME']
+            UNITARY_PRICE = form.cleaned_data['UNITARY_PRICE']
+            QUANTITY = form.cleaned_data['QUANTITY']
+            DISCOUNT=form.cleaned_data['DISCOUNT']
 
 
             try:
             # First Update into Custom User Model
-                user = CustomUser.objects.get(id=patient_id)
-                user.username = username
+                user = Medicine.objects.get(id=medicine_id)
+                user.MEDICINE_NAME = MEDICINE_NAME
 
-                user.email = email
+                user.SELLING_PRICE = SELLING_PRICE
                 user.save()
 
                 # Then Update Students Table
-                patients_edit = Patients.objects.get(admin=patient_id)
-                patients_edit.address = address
-                patients_edit.gender = gender
-                patients_edit.dob=dob
-                patients_edit.phone_number=phone_number
-                patients_edit.first_name = first_name
-                patients_edit.last_name = last_name
+                patients_edit = Medicine.objects.get(id=medicine_id)
+                patients_edit.MEDICINE_NAME = MEDICINE_NAME
+                patients_edit.SELLING_PRICE = SELLING_PRICE
+                patients_edit.EXPIRE_DATE=EXPIRE_DATE
+                patients_edit.MANUFACTURE_NAME=MANUFACTURE_NAME
+                patients_edit.UNITARY_PRICE = UNITARY_PRICE
+                patients_edit.QUANTITY = QUANTITY
+                patients_edit.DISCOUNT = DISCOUNT
+
+
 
 
                 
@@ -407,41 +286,28 @@ def editPatient(request,patient_id):
 
 
     context = {
-        "id": patient_id,
+        "id": medicine_id,
         # "username": patient.admin.username,
         "form": form,
         "title":"Edit Patient"
     }
-    return render(request, "hod_templates/edit_patient.html", context)
+    return render(request, "hod_templates/edit_medicine.html", context)
 
 
        
 
     
-def patient_personalRecords(request,pk):
-    patient=Patients.objects.get(id=pk)
-    prescrip=patient.prescription_set.all()
-    stocks=patient.dispense_set.all()
+def medicine_details(request,pk):
+    patient=Medicine.objects.get(id=pk)
+    
 
     context={
         "patient":patient,
-        "prescription":prescrip,
-        "stocks":stocks
+        
 
     }
-    return render(request,'hod_templates/patient_personalRecords.html',context)
+    return render(request,'hod_templates/medicine_details.html',context)
 
-def deletePrescription(request,pk):
-    prescribe=Prescription.objects.get(id=pk)
-    if request.method == 'POST':
-        prescribe.delete()
-        return redirect('all_patients')
-
-    context={
-        "patient":prescribe
-    }
-
-    return render(request,'hod_templates/sure_delete.html',context)
 
 
 def hodProfile(request):
@@ -480,39 +346,6 @@ def hodProfile(request):
 
     return render(request,'hod_templates/hod_profile.html',context)
 
-def deleteDoctor(request,pk):
-    try:
-        doctor=Doctor.objects.get(id=pk)
-        if request.method == 'POST':
-            doctor.delete()
-            messages.success(request, "Doctor  deleted successfully")
-
-            return redirect('manage_doctor')
-
-    except:
-        messages.error(request, "Doctor aready deleted")
-        return redirect('manage_doctor')
-
-
-   
-    return render(request,'hod_templates/sure_delete.html')
-    
-def deletePharmacist(request,pk):
-    try:
-        pharmacist=Pharmacist.objects.get(id=pk)
-        if request.method == 'POST':
-            pharmacist.delete()
-            messages.success(request, "Pharmacist  deleted successfully")
-                
-            return redirect('manage_pharmacist')
-
-    except:
-        messages.error(request, "Pharmacist aready deleted")
-        return redirect('manage_pharmacist')
-
-
-   
-    return render(request,'hod_templates/sure_delete.html')
 
 def deletePharmacyClerk(request,pk):
     try:
@@ -532,70 +365,7 @@ def deletePharmacyClerk(request,pk):
 
    
     return render(request,'hod_templates/sure_delete.html')
-def editPharmacist(request,staff_id):
-    staff = Pharmacist.objects.get(admin=staff_id)
-    if request.method == "POST":
-        
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address = request.POST.get('address')
 
-            # INSERTING into Customuser Model
-        user = CustomUser.objects.get(id=staff_id)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.email = email
-        user.username = username
-        user.save()
-        
-        # INSERTING into Staff Model
-        staff = Pharmacist.objects.get(admin=staff_id)
-        staff.address = address
-        staff.save()
-
-        messages.success(request, "Staff Updated Successfully.")
-        return redirect('manage_pharmacist')
-    context = {
-        "staff": staff,
-        "id": staff_id,
-        'title':"Edit Pharmacist "
-
-    }
-    return render(request, "hod_templates/edit_pharmacist.html", context)
-
-
-def editDoctor(request,doctor_id):
-    staff = Doctor.objects.get(admin=doctor_id)
-    if request.method == "POST":
-        
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address = request.POST.get('address')
-
-            # INSERTING into Customuser Model
-        user = CustomUser.objects.get(id=doctor_id)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.email = email
-        user.username = username
-        user.save()
-        
-        # INSERTING into Staff Model
-        staff = Doctor.objects.get(admin=doctor_id)
-        staff.address = address
-        staff.save()
-
-        messages.success(request, "Staff Updated Successfully.")
-
-    context = {
-        "staff": staff,
-        "title":"Edit Doctor"
-    }
-    return render(request, "hod_templates/edit_doctor.html", context)
 
 def editPharmacyClerk(request,clerk_id):
     clerk=PharmacyClerk.objects.get(admin=clerk_id)

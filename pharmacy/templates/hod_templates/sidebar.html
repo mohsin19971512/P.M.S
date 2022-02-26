@@ -2,9 +2,8 @@
     <!-- Brand Logo -->
     <a href="" class="brand-link ml-2">
         <img src="{{request.user.adminhod.profile_pic.url}}" alt="" width="36" height="36" class=" img-circle elevation-3" style="opacity: .8">
-        <span class="brand-text font-weight-light mt-1 ml-3 mmust">Mmust Pharmacy</span>
+        <span class="brand-text font-weight-light mt-1 ml-3 mmust">Pharmacy </span>
     </a>
-
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -36,24 +35,24 @@
 
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="fas fa-hospital-user mr-2"></i>
+                        <i class="fas fa-capsules mr-2"></i>
                         <p>
-                            Patient
+                            Medicine
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="{% url 'patient_form' %}" class="nav-link">
-                                <i class="fas fa-user-plus"></i>
-                                <p class="pl-2">add Patient</p>
+                            <a href="{% url 'medicine_form' %}" class="nav-link">
+                                <i class="fas fa-capsules"></i>
+                                <p class="pl-2">add Medicine</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="{% url 'all_patients'  %}" class="nav-link">
+                            <a href="{% url 'all_medicines'  %}" class="nav-link">
                                 <i class="fas fa-th"></i>
-                                <p class="pl-2">Manage Patient</p>
+                                <p class="pl-2">Manage Medicine</p>
                             </a>
                         </li>
 
@@ -63,22 +62,22 @@
                     <a href="#" class="nav-link">
                         <i class="fas fa-address-book mr-2"></i>
                         <p>
-                            Pharmacist
+                            Employee
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="{% url 'add_pharmacist' %}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <i class="fas fa-user-plus"></i>
-                                <p class="pl-2">add Pharmacist</p>
+                                <p class="pl-2">add Employee</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="{% url 'manage_pharmacist'  %}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <i class="fas fa-th"></i>
-                                <p class="pl-2">Manage Pharmacist</p>
+                                <p class="pl-2">Manage Employee</p>
                             </a>
                         </li>
 
@@ -86,24 +85,24 @@
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="fas fa-briefcase-medical mr-2"></i>
+                        <i class="fas fa-address-book mr-2"></i>
                         <p>
-                            Doctor
+                            Customer
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="{% url 'add_doctor' %}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <i class="fas fa-user-plus"></i>
-                                <p class="pl-2">add Doctor</p>
+                                <p class="pl-2">add Customer</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="{% url 'manage_doctor'  %}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <i class="fas fa-th"></i>
-                                <p class="pl-2">Manage Doctor</p>
+                                <p class="pl-2">Manage Customer</p>
                             </a>
                         </li>
 

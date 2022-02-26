@@ -1,0 +1,52 @@
+{% extends 'hod_templates/base_template.html'%} {% block main_content %}
+<div class="content">
+    <div class="row pt">
+       
+        <div class="col-lg-5 justify-content-center">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa fa-align-justify"></i> Medicine's Information
+                </div>
+                <div class="card-body">
+                    <tbody>
+                        <tr>
+                            <td>Medicine Name : - {{patient.MEDICINE_NAME}}</td>
+                            <br>
+                            <br>
+
+                            <td>Selling Price : - {{ patient.SELLING_PRICE }}</td>
+                            <br>
+                            <br>
+
+                            <td>Expire Date : -  {{ patient.EXPIRE_DATE }}</td>
+                            <br>
+                            <br>
+
+                            <td>Manufacture Name : - {{ patient.MANUFACTURE_NAME }}</td>
+                            <br>
+                            <br>
+
+                            <td>Unitary Price : - {{ patient.UNITARY_PRICE }}</td>
+                            <br>
+                            <br>
+
+                            <td>Quantity : - {{ patient.QUANTITY }}</td>
+                            <td>Dicount : - {{ patient.DISCOUNT }}</td>
+
+                         
+
+                        </tr>
+                    </tbody>
+                </div>
+            </div>
+        </div>
+        
+
+  
+        </div>
+    </div>
+
+
+</div>
+
+{% endblock %}
