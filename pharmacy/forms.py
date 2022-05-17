@@ -11,19 +11,32 @@ from django.core.validators import RegexValidator
 
 import json
 
-
-
-
-
-
       
-
+class DateInput(forms.DateInput):
+    input_type = "date"
 
 class MedicineForm(forms.ModelForm):
+    EXPIRE_DATE= forms.DateField(label="Expiry Date", widget=DateInput(attrs={"class":"form-control"}))
     class Meta:
         model=Medicine
         fields='__all__'
-        
+
+class EmployeeForm(forms.ModelForm):
+    PASSWORD = forms.CharField(widget=forms.PasswordInput)
+    SELLING_DATE = forms.DateField(label="Expiry Date", widget=DateInput(attrs={"class":"form-control"}))
+    class Meta:
+        model=Employee
+        fields='__all__'
+class CustomerForm(forms.ModelForm):
+    #PASSWORD = forms.CharField(widget=forms.PasswordInput)
+    class Meta:
+        model=Customer
+        fields='__all__'
+
+class StoreForm(forms.ModelForm):
+    class Meta:
+        model=Store
+        fields='__all__'    
 
 class EditMedicineForm(forms.Form):
     MEDICINE_NAME = forms.CharField(label="Medicine Name", max_length=500, widget=forms.TextInput(attrs={"class":"form-control"}))
@@ -37,8 +50,7 @@ class EditMedicineForm(forms.Form):
     DISCOUNT = forms.IntegerField(label="Dicount", widget=forms.TextInput(attrs={"class":"form-control"}))
         
 
-class DateInput(forms.DateInput):
-    input_type = "date"
+
 
 from phonenumber_field.formfields import PhoneNumberField
 class ClientForm(forms.Form):
@@ -47,8 +59,6 @@ class ClientForm(forms.Form):
    
 
     
-    
-
 class StockForm(forms.ModelForm):
     valid_to= forms.DateField(label="Expiry Date", widget=DateInput(attrs={"class":"form-control"}))
 
@@ -64,14 +74,7 @@ class CategoryForm(forms.ModelForm):
 
 
 
-       
 
-
-class ClerkForm(ModelForm):
-    class Meta:
-        model=PharmacyClerk
-        fields='__all__'
-        exclude=['admin','gender','mobile','address']
 class HodForm(ModelForm):
     class Meta:
         model=AdminHOD

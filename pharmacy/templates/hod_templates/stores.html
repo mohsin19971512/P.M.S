@@ -1,7 +1,7 @@
 {% extends 'hod_templates/base_template.html'%}
 {% load static %}
 {% block page_title %}
-<h5>{{title}}</h5>
+<h5>All Customers</h5>
 
 {% endblock page_title %}
 {% block main_content %}
@@ -36,11 +36,11 @@
                 
             <div class="card card-primar sc">
                 <div class="card-header">
-                    <span>Medicines Records</span>
+                    <span>Stores Records</span>
                    <div class="card-tools d-flex">
                        
               
-                <a class="btn btn-sm btn-info mr-2" href="{% url 'medicine_form' %}" role="button">+ Add Medicine</a> 
+                <a class="btn btn-sm btn-info mr-2" href="{% url 'create_store' %}" role="button">+ Add Stores</a> 
 
             </div>
 
@@ -49,39 +49,23 @@
                     <thead>
                             <tr>
                                     <th>No</th>
-                                    <th>Medicine Name</th>
-                                    <th>Quantity</th>
-                                    <th>Selling Price</th>
-                                    <th>Expire Date</th>
-                                    <th>Manufacture Name</th>
-            
-                                    <th>Unitary Price</th>
-                                    <th>Discount</th>
-
-            
-                                     
-                                     <th class="text-center">Action</th>
+                                    <th>Store Name</th>
+                                    <th>Place</th>
+                                    <th> Manager Store </th>
                                     
-        
+                                     <th class="text-center">Action</th>
                             </tr>
                     </thead>
                     <tbody>
-                            {% for medicine in medicine %}
-                            <tr class="hov"> <td>{{medicine.id}}</td>
-                                <td>{{medicine.MEDICINE_NAME}}</td>
-                                <td>{{medicine.QUANTITY}}</td>
-                                <td>{{medicine.SELLING_PRICE}}</td>
-        
-                                <td>{{medicine.EXPIRE_DATE}}</td>
-                                <td>{{medicine.MANUFACTURE_NAME}}</td>
-        
-                                <td>{{medicine.UNITARY_PRICE}}</td>
-                                <td>{{medicine.DISCOUNT}}</td>
-
-
-                                <td><a href="{% url 'edit_medicine' medicine.id %}" class="btn btn-sm btn-success">Edit</a>                     
-                                    <a href="{% url 'delete_medicine' medicine.id %}" class="btn btn-sm btn-danger">Delete</a></a>
-                                    <a href="{% url 'medicine_details' medicine.id %}" class="btn btn-sm btn-warning">View</a></td> 
+                            {% for store in store %}
+                            <tr class="hov"> <td>{{store.id}}</td>
+                                <td>{{store.STORE_NAME}}</td>
+                                <td>{{store.PLACE}}</td>
+                                <td>{{store.MANAGERS_STORE}}</td>
+                               
+                                <td><a href="{% url 'edit_store' store.id %}" class="btn btn-sm btn-success">Edit</a>                     
+                                    <a href="{% url 'deleteStore' store.id %}" class="btn btn-sm btn-danger">Delete</a></a>
+                                    <a href="{% url 'store_details' store.id %}" class="btn btn-sm btn-warning">View</a></td> 
             
                             </tr>
                             {% endfor %}

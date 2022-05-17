@@ -1,4 +1,3 @@
-from pharmacy.clerkViews import receptionistProfile
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
@@ -11,42 +10,130 @@ from datetime import datetime
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import datetime 
-
+ 
  
 from .forms import *
 from .models import *
 
 
 def adminDashboard(request):
+    now = datetime.now()
+    exipred_medicine = Medicine.objects.filter(EXPIRE_DATE__lt=now)
+    medicine_out_of_stock=Medicine.objects.filter(QUANTITY__lte=0).count()
     medicines_total=Medicine.objects.all().count()
-    
     Employees=Employee.objects.all().count()
     customers=Customer.objects.all().count() 
-    receptionist=PharmacyClerk.objects.all().count() 
     out_of_stock=Stock.objects.filter(quantity__lte=0).count()
     total_stock=Stock.objects.all().count()
     stores = Store.objects.all().count()
     exipred=Stock.objects.annotate(
     expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
     ).filter(expired=True).count()
-     
-
-
+         
     context={
+        'exipred_medicine':len(exipred_medicine),
+        'medicine_out_of_stock':medicine_out_of_stock,
         "medicines_total":medicines_total,
         "expired_total":exipred,
         "out_of_stock":out_of_stock,
         "total_drugs":total_stock,
         "Employees":Employees,
         "customers":customers,
-        "all_clerks":receptionist,
         "stores":stores
 
     }
     return render(request,'hod_templates/admin_dashboard.html',context)
 
 
+# 2- GET exipred_medicine
+def exipred_medicine(request):
+    now = datetime.now()
+    form=MedicineForm(request.POST or None)
+    medicine=Medicine.objects.filter(EXPIRE_DATE__lt=now)
+    context={
+        "medicine":medicine,
+        "form":form,
+        "title":"Exipred Medicine"
+    }
+    if request.method == 'POST':
+        # admin=form['first_name'].value()
+        name = request.POST.get('search')
+        medicines=Medicine.objects.filter(MEDICINE_NAME__icontains=name,EXPIRE_DATE__lt=now) 
+       
+        context={
+            "medicine":medicines,
+            form:form
+        }
+    return render(request,'hod_templates/medicine.html',context)
 
+# 2- GET medicine_out_of_stock
+def medicine_out_of_stock(request):
+    now = datetime.now()
+    form=MedicineForm(request.POST or None)
+    medicine=Medicine.objects.filter(QUANTITY__lte=0)
+    context={
+        "medicine":medicine,
+        "form":form,
+        "title":"Medicines Out Of Stock"
+    }
+    if request.method == 'POST':
+        # admin=form['first_name'].value()
+        name = request.POST.get('search')
+        medicines=Medicine.objects.filter(MEDICINE_NAME__icontains=name,QUANTITY__lte=0) 
+       
+        context={
+            "medicine":medicines,
+            form:form
+        }
+    return render(request,'hod_templates/medicine.html',context)
+
+
+
+  
+def drug_out_of_stock(request):
+    stocks = Stock.objects.filter(quantity__lte=0)
+    ex=Stock.objects.annotate(
+    expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
+    ).filter(expired=True)
+    eo=Stock.objects.annotate(
+    expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
+    ).filter(expired=False)
+    
+
+    context = {
+        "stocks": stocks,
+        "expired":ex,
+        "expa":eo,
+        "title":" Drugs Out Of Stocks"
+    }
+
+    return render(request,'hod_templates/manage_stock.html',context)
+
+def expired_drug(request):
+    stocks = Stock.objects.annotate(
+    expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
+    ).filter(expired=True)
+    ex=Stock.objects.annotate(
+    expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
+    ).filter(expired=True)
+    eo=Stock.objects.annotate(
+    expired=ExpressionWrapper(Q(valid_to__lt=Now()), output_field=BooleanField())
+    ).filter(expired=False)
+    
+
+    context = {
+        "stocks": stocks,
+        "expired":ex,
+        "expa":eo,
+        "title":"Expired Drugs"
+    }
+
+    return render(request,'hod_templates/manage_stock.html',context)
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+#Start Medicine
+# CRUD Medicine 
+# 1- Create Medicine
 def createMedicine(request):
     try:
         form=MedicineForm(request.POST or None)
@@ -70,17 +157,14 @@ def createMedicine(request):
        
     return render(request,'hod_templates/medicine_form.html',context)
 
-
-
-
-
+# 2- GET all Medicine
 def allMedicine(request):
     form=MedicineForm(request.POST or None)
     medicine=Medicine.objects.all()
     context={
         "medicine":medicine,
         "form":form,
-        "title":"Admitted Patients"
+        "title":"Medicine"
     }
     if request.method == 'POST':
         # admin=form['first_name'].value()
@@ -93,6 +177,7 @@ def allMedicine(request):
         }
     return render(request,'hod_templates/medicine.html',context)
 
+# 3- Delete Medicine
 def confirmDelete(request,pk):
     try:
         medicine=Medicine.objects.get(id=pk)
@@ -100,11 +185,280 @@ def confirmDelete(request,pk):
             medicine.delete()
             return redirect('all_medicines')
     except:
-        messages.error(request, "Medicine Cannot be deleted  deleted , Patient is still on medication or an error occured")
+        messages.error(request, "Medicine Cannot be deleted  deleted , Medicine is still on medication or an error occured")
         return redirect('all_medicines')
 
     context={
         "medicine":medicine,
+        'name': "Medicine",
+        'redirect':'all_medicines'
+
+    }
+    
+    return render(request,'hod_templates/sure_delete.html',context)
+
+# 4- Edit Medicine 
+def editMedicine(request,medicine_id):
+    request.session['medicine_id'] = medicine_id
+
+    medicine = Medicine.objects.get(id=medicine_id)
+
+    form = EditMedicineForm()
+    
+
+    # filling the form with data from the database
+    form.fields['MEDICINE_NAME'].initial = medicine.MEDICINE_NAME
+    form.fields['SELLING_PRICE'].initial = medicine.SELLING_PRICE
+    form.fields['EXPIRE_DATE'].initial = medicine.EXPIRE_DATE
+    form.fields['MANUFACTURE_NAME'].initial = medicine.MANUFACTURE_NAME
+    form.fields['UNITARY_PRICE'].initial = medicine.UNITARY_PRICE
+    form.fields['QUANTITY'].initial = medicine.QUANTITY
+    form.fields['DISCOUNT'].initial = medicine.DISCOUNT
+    if request.method == "POST":
+        if medicine_id == None:
+            return redirect('all_medicines')
+        form = EditMedicineForm( request.POST)
+
+        if form.is_valid():
+            
+            MEDICINE_NAME = form.cleaned_data['MEDICINE_NAME']
+            SELLING_PRICE = form.cleaned_data['SELLING_PRICE']
+            EXPIRE_DATE = form.cleaned_data['EXPIRE_DATE']
+            MANUFACTURE_NAME = form.cleaned_data['MANUFACTURE_NAME']
+            UNITARY_PRICE = form.cleaned_data['UNITARY_PRICE']
+            QUANTITY = form.cleaned_data['QUANTITY']
+            DISCOUNT=form.cleaned_data['DISCOUNT']
+
+
+            try:
+            # First Update into Custom User Model
+                user = Medicine.objects.get(id=medicine_id)
+                user.MEDICINE_NAME = MEDICINE_NAME
+
+                user.SELLING_PRICE = SELLING_PRICE
+                user.save()
+
+                # Then Update Students Table
+                medicines_edit = Medicine.objects.get(id=medicine_id)
+                medicines_edit.MEDICINE_NAME = MEDICINE_NAME
+                medicines_edit.SELLING_PRICE = SELLING_PRICE
+                medicines_edit.EXPIRE_DATE=EXPIRE_DATE
+                medicines_edit.MANUFACTURE_NAME=MANUFACTURE_NAME
+                medicines_edit.UNITARY_PRICE = UNITARY_PRICE
+                medicines_edit.QUANTITY = QUANTITY
+                medicines_edit.DISCOUNT = DISCOUNT
+
+
+
+
+                
+                medicines_edit.save()
+                messages.success(request, "Medicine Updated Successfully!")
+                return redirect('all_medicines')
+            except:
+                messages.success(request, "Failed to Update Medicine.")
+                return redirect('all_medicines')
+
+
+    context = {
+        "id": medicine_id,
+        "form": form,
+        "title":"Edit Medicine"
+    }
+    return render(request, "hod_templates/edit_medicine.html", context)
+
+
+def medicine_details(request,pk):
+    medicine=Medicine.objects.get(id=pk)
+    context={
+        "medicine":medicine,
+    }
+    return render(request,'hod_templates/medicine_details.html',context)
+
+#End Medicine
+#----------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------
+
+# start Employee
+# 1- create_employee
+def create_employee(request):
+    try:
+        form=EmployeeForm(request.POST or None)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Employee added Successfully!")
+
+                return redirect('all_employee')
+    except:
+        messages.error(request, "Employee Not added! Try again")
+
+        return redirect('employee_form')
+
+    
+    context={
+        "form":form,
+        "title":"Add Employee"
+    }
+       
+    return render(request,'hod_templates/employee_form.html',context)
+
+
+# get all employee
+def allEmployee(request):
+    form=EmployeeForm(request.POST or None)
+    employee=Employee.objects.all()
+    context={
+        "employee":employee,
+        "form":form,
+        "title":"Employees"
+    }
+    if request.method == 'POST':
+        # admin=form['first_name'].value()
+        name = request.POST.get('search')
+        employees=Employee.objects.filter(EMPLOYEE_NAME__icontains=name) 
+       
+        context={
+            "employees":employees,
+            form:form
+        }
+    return render(request,'hod_templates/employees.html',context)
+
+#Edit Employee
+def edit_employee(request,employee_id):
+    employee=Employee.objects.get(id=employee_id)
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('all_employee')      
+
+    else:
+        form = EmployeeForm(instance=employee)
+
+    return render(request,'hod_templates/employee_form.html',{'form': form,"title":"Edit Employee"})
+
+
+
+
+# delete Employee
+def deleteEmployee(request,pk):
+    try:
+        medicine=Employee.objects.get(id=pk)
+        if request.method == 'POST':
+            medicine.delete()
+            return redirect('all_employee')
+    except:
+        messages.error(request, "Employee Cannot be deleted  deleted , Employee is still on medication or an error occured")
+        return redirect('all_employee')
+
+    context={
+        "medicine":medicine,
+        'name': "Employee",
+        'redirect':'all_employee'
+
+    }
+    
+    return render(request,'hod_templates/sure_delete.html',context)
+
+def employee_details(request,pk):
+    employee=Employee.objects.get(id=pk)
+    
+
+    context={
+        "employee":employee,
+        
+
+    }
+    return render(request,'hod_templates/employee_details.html',context)
+
+#end employee
+#----------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------
+
+
+# Start Customer
+
+# 1- ADD Customer
+def create_customer(request):
+    try:
+        form=CustomerForm(request.POST or None)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Customer added Successfully!")
+
+                return redirect('all_customers')
+    except:
+        messages.error(request, "Customer Not added! Try again")
+
+        return redirect('create_customer')
+
+    
+    context={
+        "form":form,
+        "title":"Add Customer"
+    }
+       
+    return render(request,'hod_templates/edit_customer.html',context)
+
+
+
+# get all Customers
+def allCustomers(request):
+    form=CustomerForm(request.POST or None)
+    customer=Customer.objects.all()
+    context={
+        "customer":customer,
+        "form":form,
+        "title":"Customers"
+    }
+    if request.method == 'POST':
+        # admin=form['first_name'].value()
+        name = request.POST.get('search')
+        customers=Employee.objects.filter(CUSTOMER_NAME__icontains=name) 
+       
+        context={
+            "customers":customers,
+            form:form
+        }
+    return render(request,'hod_templates/customers.html',context)
+
+
+
+#Edit customer
+def edit_customer(request,customer_id):
+    customer=Customer.objects.get(id=customer_id)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            return redirect('all_customers')      
+
+    else:
+        form = CustomerForm(instance=customer)
+
+    return render(request,'hod_templates/edit_customer.html',{'form': form,"title":"Edit Customer"})
+
+
+
+# Delete Customer
+def deleteCustomer(request,pk):
+    try:
+        customer=Customer.objects.get(id=pk)
+        if request.method == 'POST':
+            customer.delete()
+            return redirect('all_customers')
+    except:
+        messages.error(request, "Customer Cannot be deleted  deleted , Customer is still  or an error occured")
+        return redirect('all_employee')
+
+    context={
+        "customer":customer,
+        'name': "Customer",
+        'redirect':'all_customers'
 
     }
     
@@ -112,56 +466,128 @@ def confirmDelete(request,pk):
 
 
 
-
-
-
-def createPharmacyClerk(request):
-
-    if request.method == "POST":
-           
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        address = request.POST.get('address')
-        mobile = request.POST.get('mobile')
-        password = request.POST.get('password')
-           
-        try:
-            user = CustomUser.objects.create_user(username=username, email=email,password=password, first_name=first_name, last_name=last_name, user_type=4)
-            user.pharmacyclerk.address = address
-            user.pharmacyclerk.mobile = mobile
-
-
-            user.save()
-            messages.success(request, "Staff Added Successfully!")
-            return redirect('add_pharmacyClerk')
-        except:
-            messages.error(request, "Failed to Add Staff!")
-            return redirect('add_pharmacyClerk')
-
-    context = {
-    "title":"Add Pharmacy Clerk"
-
-}
+def customer_details(request,pk):
+    customer=Customer.objects.get(id=pk)
     
 
-    return render(request,'hod_templates/add_pharmacyClerk.html',context)
+    context={
+        "customer":customer,
+        
 
-def managePharmacyClerk(request):
-   
-    
-
-
-    staffs = PharmacyClerk.objects.all()
-    context = {
-        "staffs": staffs,
-         "title":"Manage PharmacyClerk"
     }
+    return render(request,'hod_templates/customer_details.html',context)
 
-    return render(request,'hod_templates/manage_pharmacyClerk.html',context)
+#----------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------
+
+# start store
+# 1- create_store
+
+def create_store(request):
+    try:
+        form=StoreForm(request.POST or None)
+
+        if request.method == 'POST':
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Store added Successfully!")
+
+                return redirect('all_stores')
+    except:
+        messages.error(request, "Store Not added! Try again")
+
+        return redirect('create_store')
+
+    
+    context={
+        "form":form,
+        "title":"Add Store"
+    }
+       
+    return render(request,'hod_templates/create_store.html',context)
 
 
+
+# get all Stores
+def allStores(request):
+    form=CustomerForm(request.POST or None)
+    store=Store.objects.all()
+    context={
+        "store":store,
+        "form":form,
+        "title":"Stores"
+    }
+    if request.method == 'POST':
+        # admin=form['first_name'].value()
+        name = request.POST.get('search')
+        stores=Store.objects.filter(STORE_NAME__icontains=name) 
+       
+        context={
+            "stores":stores,
+            form:form
+        }
+    return render(request,'hod_templates/stores.html',context)
+
+
+
+
+#Edit Store
+def edit_store(request,store_id):
+    store=Store.objects.get(id=store_id)
+    if request.method == 'POST':
+        form = StoreForm(request.POST, instance=store)
+        if form.is_valid():
+            form.save()
+            return redirect('all_stores')      
+
+    else:
+        form = StoreForm(instance=store)
+
+    return render(request,'hod_templates/edit_store.html',{'form': form,"title":"Edit Store"})
+
+
+
+
+# Delete Store
+def deleteStore(request,pk):
+    try:
+        store=Store.objects.get(id=pk)
+        if request.method == 'POST':
+            store.delete()
+            return redirect('all_stores')
+    except:
+        messages.error(request, "Store Cannot be deleted   , Store is still  or an error occured")
+        return redirect('all_stores')
+
+    context={
+        "store":store,
+        'name': "Store",
+        'redirect':'all_stores'
+
+    }
+    
+    return render(request,'hod_templates/sure_delete.html',context)
+
+
+#Details
+def store_details(request,pk):
+    store=Store.objects.get(id=pk)
+    
+
+    context={
+        "store":store,
+        
+
+    }
+    return render(request,'hod_templates/store_details.html',context)
+
+
+
+
+
+#----------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------
+# Stock
 def addStock(request):
     form=StockForm(request.POST,request.FILES)
     if form.is_valid():
@@ -219,94 +645,15 @@ def addCategory(request):
     }
     return render(request,'hod_templates/add_category.html',context)
 
-
-
-    
-def editMedicine(request,medicine_id):
-    # adds patient id into session variable
-    request.session['medicine_id'] = medicine_id
-
-    medicine = Medicine.objects.get(id=medicine_id)
-
-    form = EditMedicineForm()
-    
-
-    # filling the form with data from the database
-    form.fields['MEDICINE_NAME'].initial = medicine.MEDICINE_NAME
-    form.fields['SELLING_PRICE'].initial = medicine.SELLING_PRICE
-    form.fields['EXPIRE_DATE'].initial = medicine.EXPIRE_DATE
-    form.fields['MANUFACTURE_NAME'].initial = medicine.MANUFACTURE_NAME
-    form.fields['UNITARY_PRICE'].initial = medicine.UNITARY_PRICE
-    form.fields['QUANTITY'].initial = medicine.QUANTITY
-    form.fields['DISCOUNT'].initial = medicine.DISCOUNT
-    if request.method == "POST":
-        if medicine_id == None:
-            return redirect('all_patients')
-        form = EditMedicineForm( request.POST)
-
-        if form.is_valid():
-            
-            MEDICINE_NAME = form.cleaned_data['MEDICINE_NAME']
-            SELLING_PRICE = form.cleaned_data['SELLING_PRICE']
-            EXPIRE_DATE = form.cleaned_data['EXPIRE_DATE']
-            MANUFACTURE_NAME = form.cleaned_data['MANUFACTURE_NAME']
-            UNITARY_PRICE = form.cleaned_data['UNITARY_PRICE']
-            QUANTITY = form.cleaned_data['QUANTITY']
-            DISCOUNT=form.cleaned_data['DISCOUNT']
-
-
-            try:
-            # First Update into Custom User Model
-                user = Medicine.objects.get(id=medicine_id)
-                user.MEDICINE_NAME = MEDICINE_NAME
-
-                user.SELLING_PRICE = SELLING_PRICE
-                user.save()
-
-                # Then Update Students Table
-                patients_edit = Medicine.objects.get(id=medicine_id)
-                patients_edit.MEDICINE_NAME = MEDICINE_NAME
-                patients_edit.SELLING_PRICE = SELLING_PRICE
-                patients_edit.EXPIRE_DATE=EXPIRE_DATE
-                patients_edit.MANUFACTURE_NAME=MANUFACTURE_NAME
-                patients_edit.UNITARY_PRICE = UNITARY_PRICE
-                patients_edit.QUANTITY = QUANTITY
-                patients_edit.DISCOUNT = DISCOUNT
-
-
-
-
-                
-                patients_edit.save()
-                messages.success(request, "Patient Updated Successfully!")
-                return redirect('all_patients')
-            except:
-                messages.success(request, "Failed to Update Patient.")
-                return redirect('all_patients')
-
-
-    context = {
-        "id": medicine_id,
-        # "username": patient.admin.username,
-        "form": form,
-        "title":"Edit Patient"
-    }
-    return render(request, "hod_templates/edit_medicine.html", context)
-
+#End stock
+#----------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------
 
        
 
     
-def medicine_details(request,pk):
-    patient=Medicine.objects.get(id=pk)
-    
 
-    context={
-        "patient":patient,
-        
 
-    }
-    return render(request,'hod_templates/medicine_details.html',context)
 
 
 
@@ -347,64 +694,6 @@ def hodProfile(request):
     return render(request,'hod_templates/hod_profile.html',context)
 
 
-def deletePharmacyClerk(request,pk):
-    try:
-        clerk=PharmacyClerk.objects.get(id=pk)
-        if request.method == 'POST':
-        
-       
-            clerk.delete()
-            messages.success(request, "Pharmacy Clerk  deleted   successfully")
-                
-            return redirect('manage_pharmacyClerk')
-
-    except:
-        messages.error(request, "Pharmacy  Clerk Not deleted")
-        return redirect('manage_pharmacyClerk')
-
-
-   
-    return render(request,'hod_templates/sure_delete.html')
-
-
-def editPharmacyClerk(request,clerk_id):
-    clerk=PharmacyClerk.objects.get(admin=clerk_id)
-    if request.method == "POST":
-        username = request.POST.get('username')
-        last_name=request.POST.get('last_name')
-        first_name=request.POST.get('first_name')
-        address=request.POST.get('address')
-        mobile=request.POST.get('mobile')
-        gender=request.POST.get('gender')
-        email=request.POST.get('email')
-    
-        try:
-            user=CustomUser.objects.get(id=clerk_id)
-            user.email=email
-            user.username=username
-            user.first_name=first_name
-            user.last_name=last_name
-            user.save()
-
-            clerk =PharmacyClerk.objects.get(admin=clerk_id)
-            clerk.address=address
-            clerk.mobile=mobile
-            clerk.gender=gender
-            clerk.save()
-
-            messages.success(request,'Receptionist Updated Succefully')
-        except:
-            messages.success(request,'An Error Was Encounterd Receptionist Not Updated')
-
-
-        
-    context={
-        "staff":clerk,
-        "title":"Edit PharmacyClerk"
-
-
-    }
-    return render(request,'hod_templates/edit_clerk.html',context)
 
 
 def editAdmin(request):
@@ -557,3 +846,7 @@ def drugDetails(request,pk):
 
     }
     return render(request,'hod_templates/view_drug.html',context)
+
+
+
+

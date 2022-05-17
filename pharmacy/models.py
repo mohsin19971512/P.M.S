@@ -13,7 +13,6 @@ from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.db.models.functions import Now
 
 
-
 class Medicine(models.Model):
     MEDICINE_NAME = models.CharField(verbose_name="Medicine Name",max_length=500)
     SELLING_PRICE = models.IntegerField(verbose_name="Selling Price")
@@ -24,8 +23,6 @@ class Medicine(models.Model):
     DISCOUNT = models.IntegerField(verbose_name="Dicount")
     def __str__(self) -> str:
         return self.MANUFACTURE_NAME
-
-
 
 
 class Employee(models.Model):
@@ -66,10 +63,7 @@ class Location(models.Model):
 
 
 class CustomUser(AbstractUser):
-    user_type_data = ((1, "AdminHOD"), (2, "Pharmacist"), (3, "Doctor"), (4, "PharmacyClerk"),(5, "Patients"))
-    user_type = models.CharField(default=1, choices=user_type_data, max_length=10)
-
-
+    user_type = models.CharField(default=1,  max_length=10)
 
 
 class AdminHOD(models.Model):
@@ -80,7 +74,7 @@ class AdminHOD(models.Model):
     admin = models.OneToOneField(CustomUser,null=True, on_delete = models.CASCADE)
     emp_no= models.CharField(max_length=100,null=True,blank=True)
     gender=models.CharField(max_length=100,null=True,choices=gender_category)
-    mobile=models.CharField(max_length=10,null=True,blank=True)
+    mobile=models.CharField(max_length=11,null=True,blank=True)
     address=models.CharField(max_length=300,null=True,blank=True)
     profile_pic=models.ImageField(default="admin.png",null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -91,58 +85,13 @@ class AdminHOD(models.Model):
         return str(self.admin)
     
 
-
-
-    
-class Doctor(models.Model):
-    gender_category=(
-        ('Male','Male'),
-        ('Female','Female'),
-    )
-    admin = models.OneToOneField(CustomUser,null=True, on_delete = models.CASCADE)
-    emp_no=models.CharField(max_length=100,null=True,blank=True)
-    age= models.IntegerField(default='0', blank=True, null=True)
-    gender=models.CharField(max_length=100,null=True,choices=gender_category)
-    mobile=models.CharField(max_length=10,null=True,blank=True)
-    address=models.CharField(max_length=300,null=True,blank=True)
-    profile_pic=models.ImageField(default="doctor.png",null=True,blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    objects = models.Manager()
-    def __str__(self):
-        return str(self.admin)
-	
-
-class PharmacyClerk(models.Model):
-    gender_category=(
-        ('Male','Male'),
-        ('Female','Female'),
-    )
-    admin = models.OneToOneField(CustomUser,null=True, on_delete = models.CASCADE)
-    emp_no=models.CharField(max_length=100,null=True,blank=True)
-    gender=models.CharField(max_length=100,null=True,choices=gender_category)
-    mobile=models.CharField(max_length=10,null=True,blank=True)
-    address=models.CharField(max_length=300,null=True,blank=True)
-    profile_pic=models.ImageField(default="images2.png",null=True,blank=True)
-    age= models.IntegerField(default='0', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    objects = models.Manager()
-    def __str__(self):
-        return str(self.admin)
-	
-    
-
+ 
 class Category(models.Model):
     name = models.CharField(max_length=50, blank=False, null=True)
     
     def __str__(self):
         return str(self.name)
 	
-
-    
-
-
 
 class ExpiredManager(models.Manager):
 
@@ -175,9 +124,6 @@ class Stock(models.Model):
   
 
 
-
-
-
 @receiver(post_save, sender=CustomUser)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -191,8 +137,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         
        
        
-       
-
 @receiver(post_save, sender=CustomUser)
 def save_user_profile(sender, instance, **kwargs):
     if instance.user_type == 1:

@@ -21,9 +21,6 @@ def loginPage(request):
             if user_type == '1':
                 return redirect('/')
                 
-          
-            elif user_type == '4':
-                return redirect('clerk_home')
             
             else:
                 messages.error(request, "Invalid Login!")

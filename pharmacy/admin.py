@@ -14,7 +14,6 @@ admin.site.register(CustomUser, UserModel)
 admin.site.register(AdminHOD)
 admin.site.register(Stock)
 admin.site.register(Category)
-admin.site.register(PharmacyClerk)
 
 
 

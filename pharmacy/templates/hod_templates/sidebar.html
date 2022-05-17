@@ -69,15 +69,15 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'employee_form' %}" class="nav-link">
                                 <i class="fas fa-user-plus"></i>
                                 <p class="pl-2">add Employee</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'all_employee' %}" class="nav-link">
                                 <i class="fas fa-th"></i>
-                                <p class="pl-2">Manage Employee</p>
+                                <p class="pl-2">Manage Employees</p>
                             </a>
                         </li>
 
@@ -94,13 +94,13 @@
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'create_customer' %}"  class="nav-link">
                                 <i class="fas fa-user-plus"></i>
                                 <p class="pl-2">add Customer</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'all_customers' %}" class="nav-link">
                                 <i class="fas fa-th"></i>
                                 <p class="pl-2">Manage Customer</p>
                             </a>
@@ -110,25 +110,25 @@
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="fas fa-chalkboard-teacher mr-2"></i>
+                        <i class="fas fa-store-alt mr-2"></i>
                         <p>
-                            PharmacyClerk
+                            Store
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
 
                         <li class="nav-item pl-2">
-                            <a href="{% url 'add_pharmacyClerk' %}" class="nav-link">
-                                <i class="fas fa-user-plus"></i>
-                                <p class="pl-2">add PharmacyClerk</p>
+                            <a href="{% url 'create_store' %}" class="nav-link">
+                                <i class="fas fa-store-alt-plus"></i>
+                                +<p class="pl-2"> add Store</p>
                             </a>
                         </li>
                         <li class="nav-item pl-2">
-                            <a href="{% url 'manage_pharmacyClerk'  %}" class="nav-link">
+                            <a href="{% url 'all_stores' %}" class="nav-link">
                                 <i class="fas fa-th"></i>
 
-                                <p class="pl-2">Manage PharmacyClerk</p>
+                                <p class="pl-2">Manage Stores</p>
                             </a>
                         </li>
 
@@ -166,6 +166,17 @@
                         </li>
 
                     </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a href="/admin" class="nav-link">
+                        <i class="fas fa-cogs mr-2"></i>
+                        <p>
+                            Settings
+                            
+                        </p>
+                    </a>
+                    
                 </li>
 
             </ul>

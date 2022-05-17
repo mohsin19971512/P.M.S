@@ -1,7 +1,7 @@
 {% extends 'hod_templates/base_template.html'%}
 {% load static %}
 {% block page_title %}
-<h5>{{title}}</h5>
+<h5>All Employees</h5>
 
 {% endblock page_title %}
 {% block main_content %}
@@ -36,11 +36,11 @@
                 
             <div class="card card-primar sc">
                 <div class="card-header">
-                    <span>Medicines Records</span>
+                    <span>Employees Records</span>
                    <div class="card-tools d-flex">
                        
               
-                <a class="btn btn-sm btn-info mr-2" href="{% url 'medicine_form' %}" role="button">+ Add Medicine</a> 
+                <a class="btn btn-sm btn-info mr-2" href="{% url 'employee_form' %}" role="button">+ Add Employee</a> 
 
             </div>
 
@@ -49,14 +49,14 @@
                     <thead>
                             <tr>
                                     <th>No</th>
-                                    <th>Medicine Name</th>
-                                    <th>Quantity</th>
-                                    <th>Selling Price</th>
-                                    <th>Expire Date</th>
-                                    <th>Manufacture Name</th>
+                                    <th>Employee Name</th>
+                                    <th>Address</th>
+                                    <th> Phone </th>
+                                    <th>Username</th>
+                                    <th>Password</th>
             
-                                    <th>Unitary Price</th>
-                                    <th>Discount</th>
+                                    <th>Medicine Sold</th>
+                                    <th>Selling Date</th>
 
             
                                      
@@ -66,22 +66,22 @@
                             </tr>
                     </thead>
                     <tbody>
-                            {% for medicine in medicine %}
-                            <tr class="hov"> <td>{{medicine.id}}</td>
-                                <td>{{medicine.MEDICINE_NAME}}</td>
-                                <td>{{medicine.QUANTITY}}</td>
-                                <td>{{medicine.SELLING_PRICE}}</td>
+                            {% for employee in employee %}
+                            <tr class="hov"> <td>{{employee.id}}</td>
+                                <td>{{employee.EMPLOYEE_NAME}}</td>
+                                <td>{{employee.ADDRESS}}</td>
+                                <td>{{employee.PHONE}}</td>
         
-                                <td>{{medicine.EXPIRE_DATE}}</td>
-                                <td>{{medicine.MANUFACTURE_NAME}}</td>
+                                <td>{{employee.USERNAME}}</td>
+                                <td>{{employee.PASSWORD}}</td>
         
-                                <td>{{medicine.UNITARY_PRICE}}</td>
-                                <td>{{medicine.DISCOUNT}}</td>
+                                <td>{{employee.MEDICINE_SOLD}}</td>
+                                <td>{{employee.SELLING_DATE}}</td>
 
 
-                                <td><a href="{% url 'edit_medicine' medicine.id %}" class="btn btn-sm btn-success">Edit</a>                     
-                                    <a href="{% url 'delete_medicine' medicine.id %}" class="btn btn-sm btn-danger">Delete</a></a>
-                                    <a href="{% url 'medicine_details' medicine.id %}" class="btn btn-sm btn-warning">View</a></td> 
+                                <td><a href="{% url 'edit_employee' employee.id %}" class="btn btn-sm btn-success">Edit</a>                     
+                                    <a href="{% url 'deleteEmployee' employee.id %}" class="btn btn-sm btn-danger">Delete</a></a>
+                                    <a href="{% url 'employee_details' employee.id %}" class="btn btn-sm btn-warning">View</a></td> 
             
                             </tr>
                             {% endfor %}
