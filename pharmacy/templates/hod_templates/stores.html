@@ -58,7 +58,7 @@
                     </thead>
                     <tbody>
                             {% for store in store %}
-                            <tr class="hov"> <td>{{store.id}}</td>
+                            <tr class="hov"> <td>{{ forloop.counter }}</td>
                                 <td>{{store.STORE_NAME}}</td>
                                 <td>{{store.PLACE}}</td>
                                 <td>{{store.MANAGERS_STORE}}</td>

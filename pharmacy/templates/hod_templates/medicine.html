@@ -67,7 +67,7 @@
                     </thead>
                     <tbody>
                             {% for medicine in medicine %}
-                            <tr class="hov"> <td>{{medicine.id}}</td>
+                            <tr class="hov"> <td>{{ forloop.counter }}</td>
                                 <td>{{medicine.MEDICINE_NAME}}</td>
                                 <td>{{medicine.QUANTITY}}</td>
                                 <td>{{medicine.SELLING_PRICE}}</td>

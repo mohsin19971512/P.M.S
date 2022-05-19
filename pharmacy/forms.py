@@ -22,7 +22,6 @@ class MedicineForm(forms.ModelForm):
         fields='__all__'
 
 class EmployeeForm(forms.ModelForm):
-    PASSWORD = forms.CharField(widget=forms.PasswordInput)
     SELLING_DATE = forms.DateField(label="Expiry Date", widget=DateInput(attrs={"class":"form-control"}))
     class Meta:
         model=Employee

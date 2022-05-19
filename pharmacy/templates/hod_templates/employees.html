@@ -52,9 +52,6 @@
                                     <th>Employee Name</th>
                                     <th>Address</th>
                                     <th> Phone </th>
-                                    <th>Username</th>
-                                    <th>Password</th>
-            
                                     <th>Medicine Sold</th>
                                     <th>Selling Date</th>
 
@@ -67,13 +64,12 @@
                     </thead>
                     <tbody>
                             {% for employee in employee %}
-                            <tr class="hov"> <td>{{employee.id}}</td>
+                            <tr class="hov"> <td>{{ forloop.counter }}</td>
                                 <td>{{employee.EMPLOYEE_NAME}}</td>
                                 <td>{{employee.ADDRESS}}</td>
                                 <td>{{employee.PHONE}}</td>
         
-                                <td>{{employee.USERNAME}}</td>
-                                <td>{{employee.PASSWORD}}</td>
+                                
         
                                 <td>{{employee.MEDICINE_SOLD}}</td>
                                 <td>{{employee.SELLING_DATE}}</td>

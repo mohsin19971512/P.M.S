@@ -59,7 +59,7 @@
                     </thead>
                     <tbody>
                             {% for customer in customer %}
-                            <tr class="hov"> <td>{{customer.id}}</td>
+                            <tr class="hov"> <td>{{ forloop.counter }}</td>
                                 <td>{{customer.CUSTOMER_NAME}}</td>
                                 <td>{{customer.ADDRESS}}</td>
                                 <td>{{customer.PRODUCT}}</td>

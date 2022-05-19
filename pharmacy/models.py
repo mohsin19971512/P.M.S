@@ -29,8 +29,8 @@ class Employee(models.Model):
     EMPLOYEE_NAME = models.CharField(verbose_name="Employee Name",max_length=500) 
     ADDRESS = models.CharField(verbose_name="Adress",max_length=500)
     PHONE = models.CharField(verbose_name="phone number",max_length=13)
-    USERNAME = models.CharField(verbose_name="Username",max_length=200)
-    PASSWORD = models.CharField(verbose_name="Password",max_length=200)
+    #USERNAME = models.CharField(verbose_name="Username",max_length=200)
+    #PASSWORD = models.CharField(verbose_name="Password",max_length=200)
     MEDICINE_SOLD = models.CharField(verbose_name="Medicine Sold",max_length=500)
     SELLING_DATE = models.DateField(verbose_name="Selling Date")
     def __str__(self) -> str:
